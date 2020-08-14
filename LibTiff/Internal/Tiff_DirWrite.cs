@@ -310,7 +310,7 @@ namespace BitMiracle.LibTiff.Classic
                                 {
                                     if ((m_flags & TiffFlags.ISBIGTIFF) == TiffFlags.ISBIGTIFF)
                                     {
-                                        m_subifdoff = m_diroff + sizeof(long) + 
+                                        m_subifdoff = m_diroff + sizeof(long) +
                                             (ulong)dir * (ulong)TiffDirEntry.SizeInBytes(m_header.tiff_version == TIFF_BIGTIFF_VERSION) +
                                             sizeof(short) * 2 + sizeof(long);
                                     }
@@ -1726,6 +1726,7 @@ namespace BitMiracle.LibTiff.Classic
             return writeData(ref dir, bytes, count * sizeof(double));
         }
 
+        ulong LastNextDir = 0;
         /// <summary>
         /// Link the current directory into the directory chain for the file.
         /// </summary>
@@ -1797,11 +1798,12 @@ namespace BitMiracle.LibTiff.Classic
                 return true;
             }
 
-            // Not the first directory, search to the last and append.
+            // Not the first directory, search to the last and append. ALEX!
 
-            ulong nextdir = m_header.tiff_diroff;
+            ulong nextdir = Math.Max(LastNextDir, m_header.tiff_diroff);
             do
             {
+                LastNextDir = nextdir;
                 ulong dircount;
                 if (!seekOK((long)nextdir) || !readDirCountOK(out dircount, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
                 {
@@ -1837,13 +1839,13 @@ namespace BitMiracle.LibTiff.Classic
             }
             while (nextdir != 0);
 
-            // get current offset
+            // get current offset ALEX!
             long off = seekFile(0, SeekOrigin.Current);
 
 
             if (m_header.tiff_version == TIFF_BIGTIFF_VERSION)
             {
-                seekFile(off - sizeof(long), SeekOrigin.Begin);
+                seekFile(off - sizeof(long), SeekOrigin.Begin);//Alex
                 if (!writelongOK((long)diroff))
                 {
                     ErrorExt(this, m_clientdata, module, "Error writing directory link");
