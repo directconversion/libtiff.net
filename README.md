@@ -1,3 +1,9 @@
+This differs from the original by a couple of lines to allow jumping to the end of the linked list of image pages (directories) in the TIFF. walking the linked list from the root each time a page is appended gets slower as the number of image pages gets large.  
+
+"Stash the last value of nextdir to avoid looping through all directories"
+
+Sadly this is not as stands a global fix, due to other functions which may modify the file.
+
 LibTiff.NET
 ===========
 
