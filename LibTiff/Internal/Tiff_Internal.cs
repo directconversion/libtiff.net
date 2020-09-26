@@ -327,6 +327,7 @@ namespace BitMiracle.LibTiff.Classic
         private bool WriteCustomDirectory(out long pdiroff)//ALEX
         {
             // Dont want to pick through this, so just clearing the cache for link directory optimization
+            // WriteCustomDirectory is private, and never called
             AlexNextDirHighWaterMarkClear();
             pdiroff = -1;
 
