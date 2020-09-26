@@ -324,8 +324,10 @@ namespace BitMiracle.LibTiff.Classic
         /// </summary>
         /// <param name="pdiroff">Output directory offset.</param>
         /// <returns><c>true</c> if succeeded; otherwise, <c>false</c></returns>
-        private bool WriteCustomDirectory(out long pdiroff)
+        private bool WriteCustomDirectory(out long pdiroff)//ALEX
         {
+            // Dont want to pick through this, so just clearing the cache for link directory optimization
+            AlexNextDirHighWaterMarkClear();
             pdiroff = -1;
 
             if (m_mode == O_RDONLY)
@@ -350,7 +352,7 @@ namespace BitMiracle.LibTiff.Classic
             if ((m_dataoff & 1) != 0)
                 m_dataoff++;
 
-            seekFile((long) m_dataoff, SeekOrigin.Begin);
+            seekFile((long)m_dataoff, SeekOrigin.Begin);
 
             // Setup external form of directory entries and write data items.
             int[] fields = new int[FieldBit.SetLongs];
@@ -471,7 +473,7 @@ namespace BitMiracle.LibTiff.Classic
 
         internal static TiffFieldInfo[] Realloc(TiffFieldInfo[] buffer, int elementCount, int newElementCount)
         {
-            TiffFieldInfo[] newBuffer = new TiffFieldInfo [newElementCount];
+            TiffFieldInfo[] newBuffer = new TiffFieldInfo[newElementCount];
 
             if (buffer != null)
             {

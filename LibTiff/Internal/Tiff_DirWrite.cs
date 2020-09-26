@@ -63,7 +63,7 @@ namespace BitMiracle.LibTiff.Classic
         /// </summary>
         /// <remarks>This routine doesn't handle overwriting a directory with
         /// auxiliary storage that's been changed.</remarks>
-        private bool writeDirectory(bool done)
+        private bool writeDirectory(bool done)//ALEX0 ALEX3
         {
             if (m_mode == O_RDONLY)
                 return true;
@@ -105,10 +105,12 @@ namespace BitMiracle.LibTiff.Classic
             TiffDirEntry[] data;
             int nfields;
             long dirsize;
-            while (true)
+            while (true)//twice
             {
                 // Directory hasn't been placed yet, put it at the end of the file
                 // and link it into the existing directory structure.
+
+                //Alex crucial call
                 if (m_diroff == 0 && !linkDirectory())
                     return false;
                 // Size the directory so that we can calculate offsets for the data
@@ -429,8 +431,12 @@ namespace BitMiracle.LibTiff.Classic
             return true;
         }
 
-        private bool MakeBigTIFF()
+        private bool MakeBigTIFF()//ALEX0 ALEX3
         {
+            //This moves stuff
+            //So clear our cached last directory offset
+            //Called in WriteHeaderOK()
+            //AlexNextDirHighWaterMarkClear();
 
             uint dirlink = 2 * sizeof(short);
             uint diroff = (uint)m_header.tiff_diroff;
@@ -1725,12 +1731,16 @@ namespace BitMiracle.LibTiff.Classic
 
             return writeData(ref dir, bytes, count * sizeof(double));
         }
-
-        ulong LastNextDir = 0;
+        //Choose long or ulong
+        ulong AlexNextDirHighWaterMark = 0;
+        void AlexNextDirHighWaterMarkClear()
+        {
+            AlexNextDirHighWaterMark = 0;
+        }
         /// <summary>
         /// Link the current directory into the directory chain for the file.
         /// </summary>
-        private bool linkDirectory()
+        private bool linkDirectory()//ALEX1 ALEX3
         {
             const string module = "linkDirectory";
 
@@ -1800,10 +1810,10 @@ namespace BitMiracle.LibTiff.Classic
 
             // Not the first directory, search to the last and append. ALEX!
 
-            ulong nextdir = Math.Max(LastNextDir, m_header.tiff_diroff);
+            ulong nextdir = Math.Max((ulong)AlexNextDirHighWaterMark, m_header.tiff_diroff);
             do
             {
-                LastNextDir = nextdir;
+                AlexNextDirHighWaterMark = nextdir;
                 ulong dircount;
                 if (!seekOK((long)nextdir) || !readDirCountOK(out dircount, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
                 {
@@ -1845,8 +1855,8 @@ namespace BitMiracle.LibTiff.Classic
 
             if (m_header.tiff_version == TIFF_BIGTIFF_VERSION)
             {
-                seekFile(off - sizeof(long), SeekOrigin.Begin);//Alex
-                if (!writelongOK((long)diroff))
+                seekFile(off - sizeof(long), SeekOrigin.Begin);
+                if (!writelongOK((long)diroff))//Alex2
                 {
                     ErrorExt(this, m_clientdata, module, "Error writing directory link");
                     return false;
@@ -1856,7 +1866,7 @@ namespace BitMiracle.LibTiff.Classic
             {
                 seekFile(off - sizeof(int), SeekOrigin.Begin);
 
-                if (!writeIntOK((int)diroff))
+                if (!writeIntOK((int)diroff))//Alex2
                 {
                     ErrorExt(this, m_clientdata, module, "Error writing directory link");
                     return false;

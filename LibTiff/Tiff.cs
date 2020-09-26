@@ -2789,9 +2789,12 @@ namespace BitMiracle.LibTiff.Classic
         /// <returns><c>true</c> if directory was unlinked successfully; otherwise, <c>false</c>.</returns>
         /// <remarks><b>UnlinkDirectory</b> does not removes directory bytes from the file/stream.
         /// It only makes them unused.</remarks>
-        public bool UnlinkDirectory(short number)
+        public bool UnlinkDirectory(short number)//ALEX1 ALEX3
         {
             const string module = "UnlinkDirectory";
+            //Alex says This may invalidate the cached version of the last image directory
+            //So clear the cached file offset
+            AlexNextDirHighWaterMarkClear();
 
             if (m_mode == O_RDONLY)
             {
@@ -2830,6 +2833,9 @@ namespace BitMiracle.LibTiff.Classic
                 SwabBigTiffValue(ref nextdir, m_header.tiff_version == TIFF_BIGTIFF_VERSION, false);
 
 
+            //Already called
+            //AlexNextDirHighWaterMarkClear();
+            //ALEX2 Not big tiff ok
             if (!writeIntOK((int)nextdir))
             {
                 ErrorExt(this, m_clientdata, module, "Error writing directory link");
@@ -2942,9 +2948,10 @@ namespace BitMiracle.LibTiff.Classic
         /// the size of the directory and pointed to data has grown, so it won’t fit in the space
         /// available at the old location. Note that this will result in the loss of the 
         /// previously used directory space.</remarks>
-        public bool RewriteDirectory()
+        public bool RewriteDirectory()//ALEX0 ALEX3
         {
             const string module = "RewriteDirectory";
+            //Can invalidate the cached last directory: AlexNextDirHighWaterMark; 
 
             // We don't need to do anything special if it hasn't been written.
             if (m_diroff == 0)
@@ -2960,7 +2967,7 @@ namespace BitMiracle.LibTiff.Classic
                 m_diroff = 0;
 
                 seekFile(TiffHeader.TIFF_MAGIC_SIZE + TiffHeader.TIFF_VERSION_SIZE, SeekOrigin.Begin);
-                if (!writeDirOffOK((long)m_header.tiff_diroff, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
+                if (!writeDirOffOK((long)m_header.tiff_diroff, m_header.tiff_version == TIFF_BIGTIFF_VERSION))//ALEX1
                 {
                     ErrorExt(this, m_clientdata, m_name, "Error updating TIFF header");
                     return false;
@@ -2968,9 +2975,13 @@ namespace BitMiracle.LibTiff.Classic
             }
             else
             {
-                ulong nextdir = m_header.tiff_diroff;
+                // Not the first directory, search to the last and append. ALEX!
+                ulong nextdir = Math.Max((ulong)AlexNextDirHighWaterMark, m_header.tiff_diroff);
+                //ulong nextdir = m_header.tiff_diroff;
                 do
                 {
+                    //nextdir is part of the chain at the top of this loop
+                    AlexNextDirHighWaterMark = nextdir;
                     ulong dircount;
                     if (!seekOK((long)nextdir) || !readDirCountOK(out dircount, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
                     {
@@ -3020,7 +3031,7 @@ namespace BitMiracle.LibTiff.Classic
                 }
                 m_diroff = 0;
 
-                if (!writeDirOffOK((long)m_diroff, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
+                if (!writeDirOffOK((long)m_diroff, m_header.tiff_version == TIFF_BIGTIFF_VERSION))//ALEX1
                 {
                     ErrorExt(this, m_clientdata, module, "Error writing directory link");
                     return false;
@@ -5898,7 +5909,7 @@ namespace BitMiracle.LibTiff.Classic
         {
             SwabArrayOfLong(array, 0, count);
         }
-        
+
         /// <summary>
         /// Swaps the bytes in specified number of values in the array of 64-bit items.
         /// </summary>
@@ -5945,7 +5956,7 @@ namespace BitMiracle.LibTiff.Classic
                 array[offset] += bytes[3] << 24;
             }
         }
-        
+
         /// <summary>
         /// Swaps the bytes in specified number of values in the array of 64-bit items
         /// starting at specified offset.

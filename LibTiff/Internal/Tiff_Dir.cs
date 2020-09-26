@@ -79,7 +79,7 @@ namespace BitMiracle.LibTiff.Classic
             m_dir = new TiffDirectory();
             m_postDecodeMethod = PostDecodeMethodType.pdmNone;
             m_foundfield = null;
-            
+
             m_tagmethods = m_defaultTagMethods;
 
             /*
@@ -88,9 +88,9 @@ namespace BitMiracle.LibTiff.Classic
              */
             if (m_extender != null)
                 m_extender(this);
-            
+
             SetField(TiffTag.COMPRESSION, Compression.NONE);
-            
+
             /*
              * NB: The directory is marked dirty as a result of setting
              * up the default compression scheme.  However, this really
@@ -113,15 +113,14 @@ namespace BitMiracle.LibTiff.Classic
             m_tilesize = -1;
             m_scanlinesize = -1;
         }
-
-        private bool advanceDirectory(ref ulong nextdir, out long off)
+        private bool advanceDirectory(ref ulong nextdir, out long off)//alex0 !!!
         {
             off = 0;
 
             const string module = "advanceDirectory";
             ulong dircount;
-            
-            if (!seekOK((long)nextdir) || !readDirCountOK(out dircount,m_header.tiff_version == TIFF_BIGTIFF_VERSION))
+
+            if (!seekOK((long)nextdir) || !readDirCountOK(out dircount, m_header.tiff_version == TIFF_BIGTIFF_VERSION))
             {
                 ErrorExt(this, m_clientdata, module, "{0}: Error fetching directory count", m_name);
                 return false;
@@ -148,7 +147,7 @@ namespace BitMiracle.LibTiff.Classic
 
             if ((m_flags & TiffFlags.SWAB) == TiffFlags.SWAB)
                 SwabBigTiffValue(ref nextdir, m_header.tiff_version == TIFF_BIGTIFF_VERSION, false);
-            
+
             return true;
         }
 

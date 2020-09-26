@@ -48,8 +48,10 @@ namespace BitMiracle.LibTiff.Classic
             return true;
         }
 
-        private bool writeHeaderOK(TiffHeader header)
+        private bool writeHeaderOK(TiffHeader header)//ALEX
         {
+            //If we are here the cached directory jump is invalid
+            AlexNextDirHighWaterMarkClear();
             bool res = writeShortOK(header.tiff_magic);
             if (res)
                 res = writeShortOK(header.tiff_version);
@@ -60,19 +62,19 @@ namespace BitMiracle.LibTiff.Classic
                 if (res)
                     res = writeShortOK(header.tiff_fill);
                 if (res)
-                    res = writelongOK((long)header.tiff_diroff);
+                    res = writelongOK((long)header.tiff_diroff);//ALEX2
             }
             else
             {
                 if (res)
                     res = writeIntOK((int)header.tiff_diroff);
-              if (res)
-                res = writelongOK(0);
+                if (res)
+                    res = writelongOK(0);//ALEX2
             }
             return res;
         }
 
-        private bool writeDirEntryOK(TiffDirEntry[] entries, long count, bool isBigTiff)
+        private bool writeDirEntryOK(TiffDirEntry[] entries, long count, bool isBigTiff)//ALEX 
         {
             bool res = true;
 
@@ -87,7 +89,7 @@ namespace BitMiracle.LibTiff.Classic
                         res = writelongOK(entries[i].tdir_count);
 
                     if (res)
-                        res = writelongOK((long)entries[i].tdir_offset);
+                        res = writelongOK((long)entries[i].tdir_offset);//Alex
                 }
                 else
                 {
@@ -124,8 +126,9 @@ namespace BitMiracle.LibTiff.Classic
             }
         }
 
-        private bool writeDirOffOK(long value, bool isBigTiff)
+        private bool writeDirOffOK(long value, bool isBigTiff)//ALEX2
         {
+            //Alex some calls go straight to writeInt/writeLong
             if (isBigTiff)
             {
                 return writelongOK(value);
