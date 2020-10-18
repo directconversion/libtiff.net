@@ -8,7 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 Console.WriteLine("Hello World!");
-var fn = @"C:\tmp\Cirdan202006\F_7(b) 10mm PMMA flat 28KV.tif";
+var fn = @"C:\tmp\Cirdan202006\PreFix\F_7(b) 10mm PMMA flat 28KV.tif";
 using Tiff inputTiff = Tiff.Open(fn, "r");
 var tifinf = inputTiff.GetTiffInfo();
 var img = ReadTiffMulti(fn);
@@ -114,7 +114,7 @@ static Tiff NewPage(Tiff output, Int16 nPage,
     int pageHeight, int width, TypeCode tc)
 {
     // create new directory and make it current
-    output.WriteDirectory();
+    output.WriteDirectory(true);
     //int dirCount = output.NumberOfDirectories();
     //Debug.Assert(nPage == dirCount);
     output.CreateDirectory();
